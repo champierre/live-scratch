@@ -2,7 +2,7 @@
   "name": "live-scratch",
   "version": "0.1.0",
   "scripts": {
-    "setup": "cd scratch-editor && npm install && npm run build:dev --workspace=packages/scratch-gui",
+    "setup": "bash setup.sh",
     "start": "node server.js"
   },
   "dependencies": {

@@ -34,12 +34,16 @@ live-scratch は `workspace/project.json` をプレーンなJSONとして公開�
 ## セットアップ
 
 ```bash
-# 依存パッケージのインストール
+git clone https://github.com/champierre/live-scratch.git
+cd live-scratch
 npm install
-
-# scratch-gui のビルド（初回のみ）
-npm run setup
+npm run setup   # scratch-editorのclone・パッチ適用・ビルドを自動実行
 ```
+
+`npm run setup` は以下を自動で行います：
+1. [scratch-editor](https://github.com/scratchfoundation/scratch-editor) をバージョン固定（`81d16ac24`）で clone
+2. `window.vm` 公開パッチと TypeScript 型宣言パッチを適用
+3. `npm install` と `scratch-gui` のビルド
 
 ## 使い方
 
