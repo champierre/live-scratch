@@ -2,7 +2,7 @@
 
 sb3ファイルをテキストエディタで編集し、変更を即座にブラウザ上のScratchエディタに反映するツール。
 
-<video src="demo.mp4" controls></video>
+![Demo](demo.gif)
 
 ## Scratch x Vibe Coding
 
