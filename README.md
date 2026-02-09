@@ -6,7 +6,9 @@ A desktop app (macOS) for bi-directional live sync between project files and the
 
 ## Scratch x Vibe Coding
 
-[![Demo](https://img.youtube.com/vi/uoXJ0N3IdK0/maxresdefault.jpg)](https://www.youtube.com/watch?v=uoXJ0N3IdK0)
+[![Watch the demo on YouTube](https://img.youtube.com/vi/uoXJ0N3IdK0/maxresdefault.jpg)](https://www.youtube.com/watch?v=uoXJ0N3IdK0)
+
+▶ Click the image above to watch the demo on YouTube
 
 live-scratch exposes `project.json` as plain JSON in `~/Documents/Live Scratch/`. This means **you can edit Scratch projects directly with AI coding agents.**
 
