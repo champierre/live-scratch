@@ -37,8 +37,7 @@ const BUILD_DIR = path.join(__dirname, 'scratch-editor', 'packages', 'scratch-gu
 const CLIENT_DIR = path.join(__dirname, 'client');
 
 // --- Extract sb3 to workspace ---
-async function extractSb3(filePath) {
-    const data = fs.readFileSync(filePath);
+async function extractSb3FromData(data) {
     const zip = await JSZip.loadAsync(data);
 
     fs.mkdirSync(WORKSPACE, {recursive: true});
@@ -65,6 +64,11 @@ async function extractSb3(filePath) {
     }
 
     console.log(`Extracted ${entries.length} files to workspace/`);
+}
+
+async function extractSb3(filePath) {
+    const data = fs.readFileSync(filePath);
+    await extractSb3FromData(data);
 }
 
 // --- Build sb3 from workspace ---
@@ -137,11 +141,40 @@ async function start() {
     const server = http.createServer(app);
     const wss = new WebSocketServer({server});
 
+    // --- File change ignore flag (for bi-directional sync loop prevention) ---
+    let ignoreFileChange = false;
+
     wss.on('connection', (ws) => {
         console.log('[live-scratch] client connected');
         if (currentSb3) {
             ws.send(currentSb3);
         }
+
+        ws.on('message', async (data) => {
+            if (!(data instanceof Buffer) || data.length === 0) return;
+            console.log(`[live-scratch] received sb3 from client (${data.length} bytes)`);
+
+            ignoreFileChange = true;
+            try {
+                await extractSb3FromData(data);
+                currentSb3 = await buildSb3();
+
+                // Broadcast to other clients
+                let sent = 0;
+                for (const client of wss.clients) {
+                    if (client !== ws && client.readyState === 1) {
+                        client.send(currentSb3);
+                        sent++;
+                    }
+                }
+                if (sent > 0) {
+                    console.log(`[live-scratch] broadcast to ${sent} other client(s)`);
+                }
+            } catch (err) {
+                console.error('[live-scratch] error processing client sb3:', err);
+            }
+            setTimeout(() => { ignoreFileChange = false; }, 1000);
+        });
     });
 
     // --- File watcher ---
@@ -156,6 +189,7 @@ async function start() {
     });
 
     async function onFileChange(filePath) {
+        if (ignoreFileChange) return;
         if (debounceTimer) clearTimeout(debounceTimer);
         debounceTimer = setTimeout(async () => {
             const relPath = path.relative(WORKSPACE, filePath);
