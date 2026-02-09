@@ -22,7 +22,13 @@ live-scratch は `workspace/project.json` をプレーンなJSONとして公開�
 
 ブロックを手でドラッグする代わりに、会話でScratchプログラミング。結果はリアルタイムにブラウザで確認できます。
 
-## セットアップ
+## ダウンロード
+
+最新の `.dmg` を [GitHub Releases](https://github.com/champierre/live-scratch/releases/latest) からダウンロードできます。
+
+> このアプリはコード署名されていません。初回起動時に macOS がブロックします。アプリを右クリックして「開く」を選択し、ダイアログで「開く」をクリックしてください。
+
+## セットアップ（ソースからビルド）
 
 ```bash
 git clone https://github.com/champierre/live-scratch.git

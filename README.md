@@ -22,7 +22,13 @@ You: See the result and give the next instruction
 
 Instead of dragging blocks by hand, program Scratch through conversation. See the results in real time in your browser.
 
-## Setup
+## Download
+
+Download the latest `.dmg` from [GitHub Releases](https://github.com/champierre/live-scratch/releases/latest).
+
+> This app is not code-signed. On first launch, macOS will block it. Right-click the app and select "Open", then click "Open" in the dialog to allow it.
+
+## Setup (build from source)
 
 ```bash
 git clone https://github.com/champierre/live-scratch.git
