@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/nicedoc/tauri/refs/heads/dev/crates/tauri-utils/schema.json",
   "productName": "Live Scratch",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "identifier": "com.live-scratch.app",
   "build": {
     "frontendDist": "../scratch-editor/packages/scratch-gui/build",
