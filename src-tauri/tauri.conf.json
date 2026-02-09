@@ -5,7 +5,7 @@
   "identifier": "com.live-scratch.app",
   "build": {
     "frontendDist": "../scratch-editor/packages/scratch-gui/build",
-    "beforeBundleCommand": "bash cleanup-build.sh"
+    "beforeBundleCommand": "cd src-tauri && bash cleanup-build.sh"
   },
   "app": {
     "withGlobalTauri": true,
