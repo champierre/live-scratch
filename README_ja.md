@@ -26,7 +26,11 @@ live-scratch は `workspace/project.json` をプレーンなJSONとして公開�
 
 最新の `.dmg` を [GitHub Releases](https://github.com/champierre/live-scratch/releases/latest) からダウンロードできます。
 
-> このアプリはコード署名されていません。初回起動時に macOS がブロックします。アプリを右クリックして「開く」を選択し、ダイアログで「開く」をクリックしてください。
+> このアプリはコード署名されていません。開こうとすると「"Live Scratch.app"は壊れているため開けません」と表示されます。以下のコマンドを実行してから開いてください：
+>
+> ```bash
+> xattr -cr "/Applications/Live Scratch.app"
+> ```
 
 ## セットアップ（ソースからビルド）
 

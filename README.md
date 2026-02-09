@@ -26,7 +26,11 @@ Instead of dragging blocks by hand, program Scratch through conversation. See th
 
 Download the latest `.dmg` from [GitHub Releases](https://github.com/champierre/live-scratch/releases/latest).
 
-> This app is not code-signed. On first launch, macOS will block it. Right-click the app and select "Open", then click "Open" in the dialog to allow it.
+> This app is not code-signed. macOS will show "app is damaged" when you try to open it. Run the following command to fix this:
+>
+> ```bash
+> xattr -cr "/Applications/Live Scratch.app"
+> ```
 
 ## Setup (build from source)
 
