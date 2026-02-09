@@ -32,9 +32,9 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "resources": [
-      "../default-project/*"
-    ],
+    "resources": {
+      "../default-project": "default-project"
+    },
     "macOS": {
       "minimumSystemVersion": "10.15"
     }

@@ -23,22 +23,41 @@ pub fn run() {
 
             log::info!("[live-scratch] workspace: {:?}", app_data);
 
-            // Get resource dir for default-project
-            // In production: resources are in the app bundle's Resources/ dir
-            // In dev mode: fall back to the project root directory
-            let resource_dir = app
-                .path()
-                .resource_dir()
-                .expect("Failed to get resource dir");
+            // Find default-project directory, trying multiple locations:
+            // 1. Tauri resource dir (production bundle)
+            // 2. Project root via CARGO_MANIFEST_DIR (dev mode)
+            // 3. Relative to the executable (fallback)
+            let default_project_dir = {
+                let mut candidates: Vec<std::path::PathBuf> = Vec::new();
 
-            let default_project_dir = if resource_dir.join("default-project").exists() {
-                resource_dir
-            } else {
-                // Dev mode: src-tauri/../ is the project root
-                std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                // Production: resource_dir/default-project/
+                if let Ok(res_dir) = app.path().resource_dir() {
+                    eprintln!("[live-scratch] resource_dir: {:?}", res_dir);
+                    candidates.push(res_dir);
+                }
+
+                // Dev mode: CARGO_MANIFEST_DIR (src-tauri) -> parent (project root)
+                let manifest_parent = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
                     .parent()
-                    .expect("Failed to get project root")
-                    .to_path_buf()
+                    .map(|p| p.to_path_buf());
+                if let Some(ref project_root) = manifest_parent {
+                    eprintln!("[live-scratch] project root (CARGO_MANIFEST_DIR parent): {:?}", project_root);
+                    candidates.push(project_root.clone());
+                }
+
+                // Find the first candidate that contains default-project/
+                let found = candidates.iter().find(|p| p.join("default-project").exists());
+                match found {
+                    Some(dir) => {
+                        eprintln!("[live-scratch] default-project found at: {:?}", dir.join("default-project"));
+                        dir.clone()
+                    }
+                    None => {
+                        eprintln!("[live-scratch] WARNING: default-project not found in any candidate: {:?}", candidates);
+                        // Last resort: use project root even if default-project doesn't exist there
+                        manifest_parent.unwrap_or_default()
+                    }
+                }
             };
 
             // Ensure default project exists

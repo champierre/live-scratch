@@ -6,21 +6,26 @@ use std::path::Path;
 pub fn ensure_default_project(workspace: &Path, resource_dir: &Path) {
     let project_json = workspace.join("project.json");
     if project_json.exists() {
+        eprintln!("[live-scratch] project.json already exists, skipping default project copy");
         return;
     }
 
-    fs::create_dir_all(workspace).ok();
+    if let Err(err) = fs::create_dir_all(workspace) {
+        eprintln!("[live-scratch] Failed to create workspace {:?}: {}", workspace, err);
+        return;
+    }
 
     let default_project = resource_dir.join("default-project");
+    eprintln!("[live-scratch] Looking for default-project at: {:?} (exists: {})", default_project, default_project.exists());
     if !default_project.exists() {
-        log::error!("default-project not found at {:?}", default_project);
+        eprintln!("[live-scratch] ERROR: default-project not found at {:?}", default_project);
         return;
     }
 
     let entries = match fs::read_dir(&default_project) {
         Ok(e) => e,
         Err(err) => {
-            log::error!("Failed to read default-project: {}", err);
+            eprintln!("[live-scratch] Failed to read default-project dir: {}", err);
             return;
         }
     };
@@ -30,28 +35,30 @@ pub fn ensure_default_project(workspace: &Path, resource_dir: &Path) {
         let path = entry.path();
         if path.is_file() {
             let dest = workspace.join(entry.file_name());
-            if let Err(err) = fs::copy(&path, &dest) {
-                log::error!("Failed to copy {:?}: {}", path, err);
-            } else {
-                count += 1;
+            match fs::copy(&path, &dest) {
+                Ok(_) => {
+                    count += 1;
+                }
+                Err(err) => {
+                    eprintln!("[live-scratch] Failed to copy {:?} -> {:?}: {}", path, dest, err);
+                }
             }
         }
     }
-    log::info!("Copied {} files from default-project to workspace", count);
+    eprintln!("[live-scratch] Copied {} files from default-project to {:?}", count, workspace);
 }
 
 /// Write CLAUDE.md to workspace from resource dir (always overwritten to stay current)
 pub fn ensure_claude_md(workspace: &Path, resource_dir: &Path) {
     let src = resource_dir.join("default-project").join("CLAUDE.md");
     if !src.exists() {
-        log::warn!("CLAUDE.md not found in default-project at {:?}", src);
+        eprintln!("[live-scratch] CLAUDE.md not found at {:?}", src);
         return;
     }
     let dest = workspace.join("CLAUDE.md");
-    if let Err(err) = fs::copy(&src, &dest) {
-        log::error!("Failed to copy CLAUDE.md: {}", err);
-    } else {
-        log::info!("[live-scratch] CLAUDE.md written to workspace");
+    match fs::copy(&src, &dest) {
+        Ok(_) => eprintln!("[live-scratch] CLAUDE.md written to {:?}", dest),
+        Err(err) => eprintln!("[live-scratch] Failed to copy CLAUDE.md: {}", err),
     }
 }
 
