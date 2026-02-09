@@ -40,6 +40,21 @@ pub fn ensure_default_project(workspace: &Path, resource_dir: &Path) {
     log::info!("Copied {} files from default-project to workspace", count);
 }
 
+/// Write CLAUDE.md to workspace from resource dir (always overwritten to stay current)
+pub fn ensure_claude_md(workspace: &Path, resource_dir: &Path) {
+    let src = resource_dir.join("default-project").join("CLAUDE.md");
+    if !src.exists() {
+        log::warn!("CLAUDE.md not found in default-project at {:?}", src);
+        return;
+    }
+    let dest = workspace.join("CLAUDE.md");
+    if let Err(err) = fs::copy(&src, &dest) {
+        log::error!("Failed to copy CLAUDE.md: {}", err);
+    } else {
+        log::info!("[live-scratch] CLAUDE.md written to workspace");
+    }
+}
+
 /// Build an SB3 (ZIP with STORE compression) from workspace files.
 /// Returns None if project.json has invalid JSON.
 pub fn build_sb3(workspace: &Path) -> Option<Vec<u8>> {
@@ -65,6 +80,11 @@ pub fn build_sb3(workspace: &Path) -> Option<Vec<u8>> {
             }
             let file_name = entry.file_name();
             let file_name_str = file_name.to_string_lossy();
+
+            // Skip non-Scratch files (e.g. CLAUDE.md)
+            if file_name_str.ends_with(".md") {
+                continue;
+            }
 
             let content = match fs::read(&path) {
                 Ok(c) => c,

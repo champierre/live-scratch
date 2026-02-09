@@ -44,6 +44,9 @@ pub fn run() {
             // Ensure default project exists
             workspace::ensure_default_project(&app_data, &default_project_dir);
 
+            // Always write CLAUDE.md (overwrite to stay current)
+            workspace::ensure_claude_md(&app_data, &default_project_dir);
+
             // Store workspace path in state
             app.manage(WorkspacePath(app_data.clone()));
 
