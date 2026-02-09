@@ -6,7 +6,9 @@
 
 ## Scratch x Vibe Coding
 
-[![Demo](https://img.youtube.com/vi/uoXJ0N3IdK0/maxresdefault.jpg)](https://www.youtube.com/watch?v=uoXJ0N3IdK0)
+[![YouTubeでデモを見る](https://img.youtube.com/vi/uoXJ0N3IdK0/maxresdefault.jpg)](https://www.youtube.com/watch?v=uoXJ0N3IdK0)
+
+▶ 画像をクリックするとYouTubeでデモ動画を再生します
 
 live-scratch は `~/Documents/Live Scratch/` に `project.json` をプレーンなJSONとして公開します。つまり **AIコーディングエージェントで直接 Scratch プロジェクトを編集できます。**
 
