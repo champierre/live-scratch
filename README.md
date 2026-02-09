@@ -2,25 +2,30 @@
 
 [日本語](README_ja.md)
 
-A tool for bi-directional live sync between `workspace/` files and the Scratch editor in your browser. Edit sb3 project files in a text editor and see changes reflected instantly — or make changes in the Scratch editor and have them written back to `workspace/` automatically.
+A desktop app (macOS) for bi-directional live sync between project files and the Scratch editor. Edit sb3 project files in a text editor and see changes reflected instantly — or make changes in the Scratch editor and have them written back automatically.
 
 ## Scratch x Vibe Coding
 
-![Demo](demo.gif)
+[![Demo](https://img.youtube.com/vi/uoXJ0N3IdK0/maxresdefault.jpg)](https://www.youtube.com/watch?v=uoXJ0N3IdK0)
 
-live-scratch exposes `workspace/project.json` as plain JSON. This means **you can edit Scratch projects directly with AI coding agents.**
+live-scratch exposes `project.json` as plain JSON in `~/Documents/Live Scratch/`. This means **you can edit Scratch projects directly with AI coding agents.**
 
-Simply give natural-language instructions like "change the cat to a dog" or "add a game over screen" to terminal AI agents such as [Claude Code](https://github.com/anthropics/claude-code), [Codex](https://github.com/openai/codex), or [Gemini CLI](https://github.com/google-gemini/gemini-cli), and watch your Scratch project update in real time.
+Simply give natural-language instructions like "change the cat to a dog" or "add a game over screen" to AI agents such as [Claude Code](https://github.com/anthropics/claude-code), [Codex](https://github.com/openai/codex), or [Gemini CLI](https://github.com/google-gemini/gemini-cli), and watch your Scratch project update in real time.
 
 ```
 You: "Change the cat to a dog"
-  ↓ AI edits workspace/project.json
+  ↓ AI edits ~/Documents/Live Scratch/project.json
   ↓ live-scratch detects the change
-  ↓ Scratch editor in the browser updates instantly
+  ↓ Scratch editor updates instantly
 You: See the result and give the next instruction
 ```
 
-Instead of dragging blocks by hand, program Scratch through conversation. See the results in real time in your browser.
+Instead of dragging blocks by hand, program Scratch through conversation. See the results in real time.
+
+## Supported Environments
+
+- macOS 10.15 (Catalina) or later
+- Apple Silicon (M1/M2/M3/M4) and Intel
 
 ## Download
 
@@ -32,7 +37,23 @@ Download the latest `.dmg` from [GitHub Releases](https://github.com/champierre/
 > xattr -cr "/Applications/Live Scratch.app"
 > ```
 
+## Usage
+
+1. Open the Live Scratch app
+2. A default project (Scratch's initial state) is created in `~/Documents/Live Scratch/`
+3. Edit `project.json` or asset files with your text editor or AI agent
+4. Changes are instantly reflected in the Scratch editor
+5. Changes made in the Scratch editor are automatically saved back to `~/Documents/Live Scratch/`
+
+### Menu
+
+- **File > Open SB3...** (`Cmd+O`) — Load an existing `.sb3` file
+- **File > Export SB3...** (`Cmd+S`) — Save the current project as `.sb3`
+- **File > Show Workspace in Finder** (`Cmd+Shift+O`) — Open `~/Documents/Live Scratch/` in Finder
+
 ## Setup (build from source)
+
+Prerequisites: [Node.js](https://nodejs.org/) and [Rust](https://www.rust-lang.org/tools/install)
 
 ```bash
 git clone https://github.com/champierre/live-scratch.git
@@ -40,57 +61,39 @@ cd live-scratch
 npm install
 ```
 
-`npm install` automatically performs the following after installing dependencies:
+`npm install` automatically performs the following via `setup.sh`:
 
 1. Clones [scratch-editor](https://github.com/scratchfoundation/scratch-editor) at a pinned version (`81d16ac24`)
 2. Applies patches to expose `window.vm` and fix TypeScript type declarations
 3. Runs `npm install` and builds `scratch-gui`
 
-## Usage
+Run in development mode:
 
 ```bash
-npm start
-```
-
-1. A default project (Scratch's initial state) is extracted into `workspace/`
-2. Your browser automatically opens the Scratch editor
-3. Edit and save `workspace/project.json` or asset files with your text editor
-4. Changes are instantly reflected in the Scratch editor in the browser
-5. Changes made in the Scratch editor (adding blocks, sprites, costumes, sounds, etc.) are automatically saved back to `workspace/`
-
-A circular indicator in the top-right corner shows the connection status (green = connected, red = disconnected).
-
-To start from an existing sb3 file:
-
-```bash
-npm start -- myproject.sb3
-```
-
-To change the port, use the `--port` option:
-
-```bash
-npm start -- --port 8080
+npm run tauri:dev
 ```
 
 ## Architecture
 
 ```
-[Text Editor] → edit → [workspace/project.json + assets]
-                                ↕ bi-directional sync
-                        [Node.js Server]
-                        (Express + WebSocket + chokidar)
-                                ↕ WebSocket (ArrayBuffer)
-                        [Browser: Scratch GUI + live-reload.js]
-                                ↕ vm.loadProject / vm.saveProjectSb3
-                        [Scratch editor]
+[Text Editor / AI Agent]
+    ↕ edit files in ~/Documents/Live Scratch/
+[Rust Backend (Tauri v2)]
+    workspace.rs  — SB3 build/extract
+    watcher.rs    — File watching (notify crate)
+    commands.rs   — Tauri IPC commands
+    lib.rs        — App init, menu
+    ↕ Tauri IPC (window.__TAURI__)
+[Scratch GUI + live-reload.js (WebView)]
+    ↕ vm.loadProject / vm.saveProjectSb3
+[Scratch Editor]
 ```
 
-- **workspace → browser**: chokidar watches file changes, builds sb3, and sends it via WebSocket
-- **browser → workspace**: listens for `PROJECT_CHANGED` events, debounces (1s), sends sb3 back to server, which extracts it to `workspace/`
-- **Loop prevention**: both client and server use ignore flags with timeouts to prevent infinite sync loops
-- **Multi-tab support**: changes from one client are broadcast to all other connected clients
+- **Workspace → Editor**: The file watcher detects changes, builds an SB3, and sends it to the frontend via Tauri events
+- **Editor → Workspace**: Listens for `PROJECT_CHANGED` events, debounces (1s), sends SB3 back to the Rust backend, which extracts it to the workspace
+- **Loop prevention**: Both frontend and backend use ignore flags with timeouts to prevent infinite sync loops
 
 ## Notes
 
-- If `project.json` has a JSON syntax error, an error is displayed in the terminal and the update is skipped
+- If `project.json` has a JSON syntax error, the update is skipped and an error is logged
 - `vm.loadProject()` reloads the entire project, so running scripts, runtime variable values, and clones are reset

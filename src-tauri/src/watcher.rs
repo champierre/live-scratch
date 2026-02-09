@@ -35,7 +35,13 @@ pub fn start_watcher(app: AppHandle, workspace_path: PathBuf) {
 
                 match result {
                     Ok(events) => {
-                        if events.is_empty() {
+                        // Ignore changes to non-Scratch files (e.g. CLAUDE.md)
+                        let has_scratch_change = events.iter().any(|e| {
+                            e.paths.iter().any(|p| {
+                                p.extension().map_or(true, |ext| ext != "md")
+                            })
+                        });
+                        if events.is_empty() || !has_scratch_change {
                             return;
                         }
                         log::info!("[live-scratch] file change detected");
